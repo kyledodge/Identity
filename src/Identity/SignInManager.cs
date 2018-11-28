@@ -280,6 +280,8 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
 
+            InitiateDelay();
+
             var attempt = await CheckPasswordSignInAsync(user, password, lockoutOnFailure);
             return attempt.Succeeded
                 ? await SignInOrTwoFactorAsync(user, isPersistent)
@@ -302,6 +304,8 @@ namespace Microsoft.AspNetCore.Identity
             var user = await UserManager.FindByNameAsync(userName);
             if (user == null)
             {
+                InitiateDelay();
+
                 return SignInResult.Failed;
             }
 
@@ -819,6 +823,18 @@ namespace Microsoft.AspNetCore.Identity
                 return UserManager.ResetAccessFailedCountAsync(user);
             }
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Used to create a randomized delay
+        /// </summary>
+        private void InitiateDelay()
+        {
+            var delayMin = 100;
+            var delayMax = 300;
+            var randomizedDelay = new Random().Next(delayMin, delayMax);
+
+            System.Threading.Thread.Sleep(randomizedDelay);
         }
 
         internal class TwoFactorAuthenticationInfo
